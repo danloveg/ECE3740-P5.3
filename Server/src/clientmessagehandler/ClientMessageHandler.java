@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  *
  * @author ferens
  */
-public class ClientMessageHandler {
+public class ClientMessageHandler implements MessageHandler {
 
     server.Server myServer;
     String theCommand = "";
@@ -24,6 +24,8 @@ public class ClientMessageHandler {
         this.myServer = myServer;
     }
 
+
+    @Override
     public void handleClientMessage(clientconnection.ClientConnection myClientConnection, String msg) {
         //if (!msg.equals("255")) {
         if (msg.charAt(0)!=0xFFFD) { //0xFFFD = UTF-8 encoding of 0xFF
@@ -35,10 +37,11 @@ public class ClientMessageHandler {
     }
 
 
-
-    public void handleClientMessage(String theExceptionalEvent) {
+    @Override
+    public void handleClientException(String theExceptionalEvent) {
         myServer.sendMessageToUI(theExceptionalEvent);
     }
+
 
     public void handleCompleteClientMessage(clientconnection.ClientConnection myClientConnection, String theCommand) {
         double randomNum;

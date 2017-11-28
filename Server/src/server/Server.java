@@ -20,7 +20,7 @@ public class Server implements Runnable {
     private InetAddress proxyAddress = null;
     private int proxyPortNumber;
     private boolean isProxySet;
-    
+
 
     /**
      * Create a new Server instance, which may or may not be a proxy server. If
@@ -97,10 +97,11 @@ public class Server implements Runnable {
             if (doListen == true) {
                 try {
                     clientSocket = serverSocket.accept();
-                    clientconnection.ClientConnection myCC = new clientconnection.ClientConnection(clientSocket, myClientCommandHandler, this);
-                    Thread myCCthread = new Thread(myCC);
-                    myCCthread.start();
-                    sendMessageToUI("Client connected:\n\tRemote Socket Address = " + clientSocket.getRemoteSocketAddress() + "\n\tLocal Socket Address = " + clientSocket.getLocalSocketAddress());
+                    if (isProxyServer == false) {
+                        connectClientNormal();
+                    } else {
+                        connectClientProxy();
+                    }
                 } catch (SocketException | SocketTimeoutException e) {
                     //check doListen.
                     if (doListen == false) {
@@ -119,11 +120,32 @@ public class Server implements Runnable {
     }
     
     public void connectClientNormal() {
-        // TODO: Create ClientConnection for the user and a new thread for it
+        // Connect the client to this server
+        clientconnection.ClientConnection myCC =
+                new clientconnection.ClientConnection(clientSocket, myClientCommandHandler, this, false);
+        Thread myCCthread = new Thread(myCC);
+        myCCthread.start();
+        sendMessageToUI("Client connected:\n\tRemote Socket Address = " +
+                clientSocket.getRemoteSocketAddress() +
+                "\n\tLocal Socket Address = " +
+                clientSocket.getLocalSocketAddress());
     }
     
     public void connectClientProxy() {
-        // TODO: Create a Client for the user and a new thread for it
+        // Create a proxy client connection
+        clientconnection.ClientConnection proxyConnection =
+                new clientconnection.ClientConnection(clientSocket, myClientCommandHandler, this, true);
+
+        // Set the proxy
+        proxyConnection.setProxy(proxyAddress, proxyPortNumber);
+
+        // Create a new Thread and run it
+        Thread myCCthread = new Thread(proxyConnection);
+        myCCthread.start();
+        sendMessageToUI("Client connected:\n\tRemote Socket Address = " +
+                clientSocket.getRemoteSocketAddress() +
+                "\n\tLocal Socket Address = " +
+                clientSocket.getLocalSocketAddress());
     }
 
 

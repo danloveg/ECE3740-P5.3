@@ -7,7 +7,9 @@ package clientconnection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -23,14 +25,24 @@ public class ClientConnection implements Runnable {
     OutputStream output;
     ServerSocket serverSocket = null;
     Socket clientSocket = null;
-    clientmessagehandler.ClientMessageHandler myClientCommandHandler;
+    clientmessagehandler.MessageHandler myClientCommandHandler;
     server.Server myServer;
     boolean stopThisThread = false;
 
-    public ClientConnection(Socket clientSocket, clientmessagehandler.ClientMessageHandler myClientCommandHandler, server.Server myServer) {
+    InetAddress proxyAddress = null;
+    int proxyPortNumber;
+    boolean isProxyConnection = false;
+    client.ProxyClient myProxyClient = null;
+    userinterface.UserInterface serverMessageInterceptor;
+
+    public ClientConnection(Socket clientSocket,
+            clientmessagehandler.ClientMessageHandler myClientCommandHandler,
+            server.Server myServer,
+            boolean proxy) {
         this.clientSocket = clientSocket;
         this.myClientCommandHandler = myClientCommandHandler;
         this.myServer = myServer;
+
         try {
             input = clientSocket.getInputStream();
             output = clientSocket.getOutputStream();
@@ -39,19 +51,27 @@ public class ClientConnection implements Runnable {
             myServer.sendMessageToUI("Cannot create IO streams; exiting program.");
             System.exit(1);
         }
+
+        isProxyConnection = proxy;
     }
 
     @Override
     public void run() {
         byte msg;
-        String theClientMessage = "";
+        String theClientMessage;
+
+        if (true == getProxy()) {
+            // Create a proxy client
+            myProxyClient = new client.ProxyClient(proxyPortNumber, serverMessageInterceptor, proxyAddress);
+        }
+
         while (stopThisThread == false) {
             try {
                 msg = (byte) input.read();
                 theClientMessage = byteToString(msg);
                 myClientCommandHandler.handleClientMessage(this, theClientMessage);
             } catch (IOException e) {
-                myClientCommandHandler.handleClientMessage("IOException: "
+                myClientCommandHandler.handleClientException("IOException: "
                         + e.toString()
                         + ". Stopping thread and disconnecting client: "
                         + clientSocket.getRemoteSocketAddress());
@@ -60,6 +80,7 @@ public class ClientConnection implements Runnable {
             }
         }
     }
+
 
     private String byteToString(byte theByte) {
         byte[] theByteArray = new byte[1];
@@ -76,6 +97,7 @@ public class ClientConnection implements Runnable {
         }
     }
 
+
     public void sendMessageToClient(byte msg) {
         try {
             output.write(msg);
@@ -86,6 +108,7 @@ public class ClientConnection implements Runnable {
         } finally {
         }
     }
+
 
     public void sendStringMessageToClient(String theMessage) {
         for (int i = 0; i < theMessage.length(); i++) {
@@ -118,5 +141,35 @@ public class ClientConnection implements Runnable {
 
     public Socket getClientSocket() {
         return clientSocket;
+    }
+
+
+    /**
+     * Set the address to use and the port number of the server to proxy to.
+     * @param address The address to use to connect to the server.
+     * @param portNumber The port to use to connect to the server.
+     */
+    public void setProxy(InetAddress address, int portNumber) {
+        this.proxyAddress = address;
+        this.proxyPortNumber = portNumber;
+        this.serverMessageInterceptor = new MessageInterceptor(this.output);
+    }
+
+    public boolean getProxy() {
+        return this.isProxyConnection;
+    }
+
+
+    private class MessageInterceptor implements userinterface.UserInterface {
+        PrintWriter output;
+
+        public MessageInterceptor(OutputStream output) {
+            this.output = new PrintWriter(output, true);
+        }
+
+        @Override
+        public void update(String message) {
+            output.print(message);
+        }
     }
 }
