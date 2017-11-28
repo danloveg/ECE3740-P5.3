@@ -5,22 +5,39 @@ import java.net.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Server implements Runnable{
+public class Server implements Runnable {
 
-    InputStream input;
-    OutputStream output;
-    ServerSocket serverSocket = null;
-    Socket clientSocket = null;
-    clientmessagehandler.ClientMessageHandler myClientCommandHandler;
-    userinterface.UserInterface myUI;
-    int portNumber = 8765, backlog = 500;
-    boolean doListen = false;
+    private InputStream input;
+    private OutputStream output;
+    private ServerSocket serverSocket = null;
+    private Socket clientSocket = null;
+    private clientmessagehandler.ClientMessageHandler myClientCommandHandler;
+    private userinterface.UserInterface myUI;
+    private int portNumber = 8765, backlog = 500;
+    private boolean doListen = false;
+
+    private boolean isProxyServer = false;
+    private InetAddress proxyAddress = null;
+    private int proxyPortNumber;
+    private boolean isProxySet;
     
 
-    public Server(int portNumber, int backlog, userinterface.UserInterface myUI) {
+    /**
+     * Create a new Server instance, which may or may not be a proxy server. If
+     * the server is to be a proxy, the proxy port and address must be set
+     * before a Client is allowed to connect; connections will be rejected if
+     * there is no server to proxy to.
+     * @param portNumber The port number to create the server on.
+     * @param backlog The number of users that are allowed to connect to server.
+     * @param myUI The user interface to be associated with this Server.
+     * @param proxy true if this is to be a proxy server, false if not.
+     */
+    public Server(int portNumber, int backlog, userinterface.UserInterface myUI,
+            boolean proxy) {
         this.portNumber = portNumber;
         this.backlog = backlog;
         this.myUI = myUI;
+        this.isProxyServer = proxy;
         this.myClientCommandHandler = new clientmessagehandler.ClientMessageHandler(this);
      }
 
@@ -70,6 +87,10 @@ public class Server implements Runnable{
         setDoListen(false);
     }
 
+
+    /**
+     * Accept Clients connecting, and 
+     */
     @Override
     public void run() {
         while (true) {
@@ -96,15 +117,58 @@ public class Server implements Runnable{
             }
         }
     }
+    
+    public void connectClientNormal() {
+        // TODO: Create ClientConnection for the user and a new thread for it
+    }
+    
+    public void connectClientProxy() {
+        // TODO: Create a Client for the user and a new thread for it
+    }
 
+
+    /**
+     * Set the server's port.
+     * @param portNumber The port to create the server socket on.
+     */
     public void setPort(int portNumber) {
         this.portNumber = portNumber;
     }
 
+
+    /**
+     * Get the port that the server is using.
+     * @return The port number currently being used for the server socket.
+     */
     public int getPort() {
         return this.portNumber;
     }
-    
+
+
+    /**
+     * Set the address to use and the port number of the server to proxy to.
+     * @param address The address to use to connect to the server.
+     * @param portNumber The port to use to connect to the server.
+     */
+    public void setProxy(InetAddress address, int portNumber) {
+        this.proxyAddress = address;
+        this.proxyPortNumber = portNumber;
+    }
+
+
+    /**
+     * Determine if this server is being used as a proxy.
+     * @return true if server is a proxy, false is not.
+     */
+    public boolean getProxy() {
+        return this.isProxyServer;
+    }
+
+
+    /**
+     * Display a message to the server user.
+     * @param theString The message to display.
+     */
     public void sendMessageToUI(String theString) {
         myUI.update(theString);
     }
