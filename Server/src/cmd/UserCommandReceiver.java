@@ -6,6 +6,8 @@
 package cmd;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  *
@@ -27,7 +29,7 @@ public class UserCommandReceiver {
         if (false == myClient.getConnected()) {
             try {
                 // Try to connect to server
-                myClient.connectToServerIP("192.168.1.214");
+                myClient.connectToServer();
                 // Then create the Client Thread and start it
                 Thread clientThread = new Thread(myClient);
                 clientThread.start();
@@ -83,6 +85,41 @@ public class UserCommandReceiver {
             }
         } else {
             UI.update("No connected server.");
+        }
+    }
+
+
+    /**
+     * Try to set the Client's IP to a new address. Tries to convert the string
+     * to an address, if there is an UnknownHostException, the IP will not be
+     * updated.
+     * @param newIPAddress The string containing the IP address
+     */
+    protected void setClientIP(String newIPAddress) {
+        // Try to create a new IP address
+        try {
+            InetAddress address = InetAddress.getByName(newIPAddress);
+            myClient.setIpAddress(address);
+            UI.update("IP set to: " + newIPAddress);
+        } catch (UnknownHostException e) {
+            UI.update("Could not create IP: " + newIPAddress);
+        }
+    }
+
+
+    /**
+     * Try to set the Client's port to a new number. Converts the string to a
+     * number and uses that as the new port number. If there is a
+     * NumberFormatException, it will not update the port.
+     * @param newPortNumber The string containing the port number
+     */
+    protected void setClientPort(String newPortNumber) {
+        try {
+            int port = Integer.parseInt(newPortNumber);
+            myClient.setPort(port);
+            UI.update("Port number set to " + newPortNumber);
+        } catch (NumberFormatException e) {
+            UI.update(newPortNumber + " is not a number.");
         }
     }
 }

@@ -13,6 +13,6 @@ public class L4onCommand implements commandinterface.Command {
 
     @Override
     public void execute(String cmd) {
-        receiver.sendStringToServer("L1off");
+        receiver.sendStringToServer("L4on");
     }
 }

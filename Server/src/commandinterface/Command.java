@@ -1,9 +1,13 @@
 package commandinterface;
 
 /**
- *
  * @author loveboat
  */
+
 public interface Command {
-    public abstract void execute(String cmd);
+    /**
+     * Execute the command.
+     * @param cmd The command to execute.
+     */
+    void execute(String cmd);
 }
