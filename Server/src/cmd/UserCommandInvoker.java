@@ -11,10 +11,10 @@ import java.util.concurrent.ExecutorService;
 public class UserCommandInvoker implements commandinterface.Command {
     private commandinterface.Command userCommand;
     private final cmd.UserCommandReceiver commandReceiver;
-    private final userinterface.Userinterface UI;
+    private final userinterface.UserInterface UI;
     private final ExecutorService executor;
 
-    public UserCommandInvoker(userinterface.Userinterface ui, client.Client client) {
+    public UserCommandInvoker(userinterface.UserInterface ui, client.Client client) {
         this.UI = ui;
         // Allow four threads to be ran concurrently
         this.executor = Executors.newFixedThreadPool(4);
