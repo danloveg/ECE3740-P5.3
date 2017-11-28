@@ -14,10 +14,10 @@ import java.net.UnknownHostException;
  * @author loveboat
  */
 public class UserCommandReceiver {
-    private final client.Client myClient;
+    private final client.ProxyClient myClient;
     private final userinterface.UserInterface UI;
 
-    public UserCommandReceiver(userinterface.UserInterface ui, client.Client client) {
+    public UserCommandReceiver(userinterface.UserInterface ui, client.ProxyClient client) {
         UI = ui;
         myClient = client;
     }

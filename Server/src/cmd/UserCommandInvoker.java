@@ -16,7 +16,7 @@ public class UserCommandInvoker implements commandinterface.Command {
     private final userinterface.UserInterface UI;
     private final ExecutorService executor;
 
-    public UserCommandInvoker(userinterface.UserInterface ui, client.Client client) {
+    public UserCommandInvoker(userinterface.UserInterface ui, client.ProxyClient client) {
         this.UI = ui;
         // Allow four threads to be ran concurrently
         this.executor = Executors.newFixedThreadPool(4);
