@@ -21,6 +21,11 @@ public class ProxyClientMessageHandler implements MessageHandler {
     
     @Override
     public void handleClientMessage(clientconnection.ClientConnection connection, String message) {
-        
+        // TODO: Implement
+    }
+    
+    @Override
+    public void handleClientException(String exceptionalEvent) {
+        myServer.sendMessageToUI(exceptionalEvent);
     }
 }
