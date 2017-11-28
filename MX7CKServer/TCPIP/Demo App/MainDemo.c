@@ -67,7 +67,7 @@
 
 #include "ConfigurationBits.h"
 
-#include "I2C.h"
+// #include "I2C.h"
 
 #if defined(STACK_USE_ZEROCONF_LINK_LOCAL)
 #include "TCPIP Stack/ZeroconfLinkLocal.h"

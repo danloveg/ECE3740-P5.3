@@ -82,7 +82,7 @@
       <itemPath>../ConfigurationBits.h</itemPath>
       <itemPath>../PortConfig.h</itemPath>
       <itemPath>../TCPGPIOServer.h</itemPath>
-      <itemPath>../../../../../../../../../../3740/Projects/P4/P4.1/MX7CKServer/TCPIP/Demo App/I2C.h</itemPath>
+      <itemPath>../../../../../../P4/MX7CKServer/TCPIP/Demo App/I2C.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -164,7 +164,7 @@
       <itemPath>../LEDTCPServer.c</itemPath>
       <itemPath>../portIO.c</itemPath>
       <itemPath>../TCPGPIOServer.c</itemPath>
-      <itemPath>../../../../../../../../../../3740/Projects/P4/P4.1/MX7CKServer/TCPIP/Demo App/I2C.c</itemPath>
+      <itemPath>../../../../../../P4/MX7CKServer/TCPIP/Demo App/I2C.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -183,6 +183,7 @@
     <Elem>..\..\..\Microchip\Include\TCPIP Stack</Elem>
     <Elem>..\..\..\Microchip\TCPIP Stack</Elem>
     <Elem>../../../../../../../../../../3740/Projects/P4/P4.1/MX7CKServer/TCPIP/Demo App</Elem>
+    <Elem>../../../../../../P4/MX7CKServer/TCPIP/Demo App</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
