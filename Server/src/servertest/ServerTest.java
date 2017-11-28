@@ -9,7 +9,7 @@ public class ServerTest {
     public static void main(String[] args) {
 
         standardiouserinterface.StandardIO myUI = new standardiouserinterface.StandardIO();
-        server.Server myServer = new server.Server(8765, 1, myUI, false);
+        server.Server myServer = new server.Server(8765, 1, myUI);
         usercommandhandler.UserCommandHandler myUserCommandHandler = new usercommandhandler.UserCommandHandler(myUI, myServer);
         myUI.setCommand(myUserCommandHandler);
         Thread myUIthread = new Thread(myUI);

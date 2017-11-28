@@ -35,10 +35,17 @@ public class ClientConnection implements Runnable {
     client.ProxyClient myProxyClient = null;
     userinterface.UserInterface serverMessageInterceptor;
 
+
+    /**
+     * Create a normal client connection to the server.
+     * @param clientSocket
+     * @param myClientCommandHandler
+     * @param myServer
+     */
     public ClientConnection(Socket clientSocket,
-            clientmessagehandler.ClientMessageHandler myClientCommandHandler,
-            server.Server myServer,
-            boolean proxy) {
+            clientmessagehandler.MessageHandler myClientCommandHandler,
+            server.Server myServer) {
+
         this.clientSocket = clientSocket;
         this.myClientCommandHandler = myClientCommandHandler;
         this.myServer = myServer;
@@ -51,19 +58,48 @@ public class ClientConnection implements Runnable {
             myServer.sendMessageToUI("Cannot create IO streams; exiting program.");
             System.exit(1);
         }
-
-        isProxyConnection = proxy;
     }
+
+
+    /**
+     * Create a connection to another server, with a specific address and port
+     * number.
+     * @param clientSocket The socket the client is connected to
+     * @param myServer The server the client is currently connected to
+     * @param proxyAddress The address to use for a new client
+     * @param proxyPortNumber The port number of the server to route communications to
+     */
+    public ClientConnection(Socket clientSocket,
+            server.Server myServer,
+            InetAddress proxyAddress,
+            int proxyPortNumber) {
+
+        this.clientSocket = clientSocket;
+        this.myServer = myServer;
+        this.proxyAddress = proxyAddress;
+        this.proxyPortNumber = proxyPortNumber;
+
+        try {
+            input = clientSocket.getInputStream();
+            output = clientSocket.getOutputStream();
+        } catch (IOException ex) {
+            Logger.getLogger(ClientConnection.class.getName()).log(Level.SEVERE, null, ex);
+            myServer.sendMessageToUI("Cannot create IO streams; exiting program.");
+            System.exit(1);
+        }
+
+        this.serverMessageInterceptor = new MessageInterceptor(this.output);
+        this.myProxyClient = new client.ProxyClient(proxyPortNumber, serverMessageInterceptor, proxyAddress);
+        this.myClientCommandHandler = new clientmessagehandler.ProxyClientMessageHandler(this.myServer, this.myProxyClient);
+
+        this.isProxyConnection = true;
+    }
+
 
     @Override
     public void run() {
         byte msg;
         String theClientMessage;
-
-        if (true == getProxy()) {
-            // Create a proxy client
-            myProxyClient = new client.ProxyClient(proxyPortNumber, serverMessageInterceptor, proxyAddress);
-        }
 
         while (stopThisThread == false) {
             try {
@@ -150,10 +186,15 @@ public class ClientConnection implements Runnable {
      * @param portNumber The port to use to connect to the server.
      */
     public void setProxy(InetAddress address, int portNumber) {
-        this.proxyAddress = address;
-        this.proxyPortNumber = portNumber;
-        this.serverMessageInterceptor = new MessageInterceptor(this.output);
+        if (this.isProxyConnection) {
+            this.proxyAddress = address;
+            this.proxyPortNumber = portNumber;
+            this.serverMessageInterceptor = new MessageInterceptor(this.output);
+        } else {
+            myServer.sendMessageToUI("Trying to set proxy info for a normal connection.");
+        }
     }
+
 
     public boolean getProxy() {
         return this.isProxyConnection;

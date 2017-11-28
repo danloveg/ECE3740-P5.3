@@ -19,27 +19,42 @@ public class Server implements Runnable {
     private boolean isProxyServer = false;
     private InetAddress proxyAddress = null;
     private int proxyPortNumber;
-    private boolean isProxySet;
 
 
     /**
-     * Create a new Server instance, which may or may not be a proxy server. If
-     * the server is to be a proxy, the proxy port and address must be set
-     * before a Client is allowed to connect; connections will be rejected if
-     * there is no server to proxy to.
+     * Create a new normal Server instance, so that clients can connect to this
+     * server.
      * @param portNumber The port number to create the server on.
      * @param backlog The number of users that are allowed to connect to server.
      * @param myUI The user interface to be associated with this Server.
-     * @param proxy true if this is to be a proxy server, false if not.
      */
-    public Server(int portNumber, int backlog, userinterface.UserInterface myUI,
-            boolean proxy) {
+    public Server(int portNumber, int backlog, userinterface.UserInterface myUI) {
         this.portNumber = portNumber;
         this.backlog = backlog;
         this.myUI = myUI;
-        this.isProxyServer = proxy;
         this.myClientCommandHandler = new clientmessagehandler.ClientMessageHandler(this);
-     }
+    }
+
+
+    /**
+     * Create a new proxy Server instance, so that clients can connect to an
+     * external server (routed through this server).
+     * @param portNumber The port number for this server.
+     * @param backlog The number of users that are allowed to connect to server.
+     * @param myUI The user interface to be associated with this Server.
+     * @param proxyAddress The address to use to connect to proxy server.
+     * @param proxyPortNumber The port number of the external server.
+     */
+    public Server(int portNumber, int backlog, userinterface.UserInterface myUI, InetAddress proxyAddress, int proxyPortNumber) {
+        this.portNumber = portNumber;
+        this.backlog = backlog;
+        this.myUI = myUI;
+        this.proxyAddress = proxyAddress;
+        this.proxyPortNumber = proxyPortNumber;
+        this.isProxyServer = true;
+        this.myClientCommandHandler = new clientmessagehandler.ClientMessageHandler(this);
+    }
+
 
     public synchronized void setDoListen(boolean doListen){
         this.doListen = doListen;
@@ -97,11 +112,7 @@ public class Server implements Runnable {
             if (doListen == true) {
                 try {
                     clientSocket = serverSocket.accept();
-                    if (isProxyServer == false) {
-                        connectClientNormal();
-                    } else {
-                        connectClientProxy();
-                    }
+                    connectClient();
                 } catch (SocketException | SocketTimeoutException e) {
                     //check doListen.
                     if (doListen == false) {
@@ -118,30 +129,27 @@ public class Server implements Runnable {
             }
         }
     }
-    
-    public void connectClientNormal() {
-        // Connect the client to this server
-        clientconnection.ClientConnection myCC =
-                new clientconnection.ClientConnection(clientSocket, myClientCommandHandler, this, false);
-        Thread myCCthread = new Thread(myCC);
-        myCCthread.start();
-        sendMessageToUI("Client connected:\n\tRemote Socket Address = " +
-                clientSocket.getRemoteSocketAddress() +
-                "\n\tLocal Socket Address = " +
-                clientSocket.getLocalSocketAddress());
-    }
-    
-    public void connectClientProxy() {
-        // Create a proxy client connection
-        clientconnection.ClientConnection proxyConnection =
-                new clientconnection.ClientConnection(clientSocket, myClientCommandHandler, this, true);
 
-        // Set the proxy
-        proxyConnection.setProxy(proxyAddress, proxyPortNumber);
+
+    /**
+     * Create a normal connection to this server.
+     */
+    public void connectClient() {
+        clientconnection.ClientConnection myCC;
+
+        if (true == isProxyServer) {
+            // Connect the client to an external server
+            myCC = new clientconnection.ClientConnection(clientSocket, this, proxyAddress, proxyPortNumber);
+        } else {
+            // Otherwise, connect client to this server
+            myCC = new clientconnection.ClientConnection(clientSocket, myClientCommandHandler, this);
+        }
 
         // Create a new Thread and run it
-        Thread myCCthread = new Thread(proxyConnection);
+        Thread myCCthread = new Thread(myCC);
         myCCthread.start();
+
+        // Notify the server user that a client has connected.
         sendMessageToUI("Client connected:\n\tRemote Socket Address = " +
                 clientSocket.getRemoteSocketAddress() +
                 "\n\tLocal Socket Address = " +
@@ -173,8 +181,12 @@ public class Server implements Runnable {
      * @param portNumber The port to use to connect to the server.
      */
     public void setProxy(InetAddress address, int portNumber) {
-        this.proxyAddress = address;
-        this.proxyPortNumber = portNumber;
+        if (true == isProxyServer) {
+            this.proxyAddress = address;
+            this.proxyPortNumber = portNumber;
+        } else {
+            myUI.update("Trying to set proxy info for non-proxy server.");
+        }
     }
 
 
@@ -182,7 +194,7 @@ public class Server implements Runnable {
      * Determine if this server is being used as a proxy.
      * @return true if server is a proxy, false is not.
      */
-    public boolean getProxy() {
+    public boolean getProxyStatus() {
         return this.isProxyServer;
     }
 
