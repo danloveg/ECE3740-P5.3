@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$USER_HOME$/Documents/University/2017_Fall-ECE3740/Projects/P5/P5.2/AndroidGUIClient/AndroidGUIClient.iml" filepath="$USER_HOME$/Documents/University/2017_Fall-ECE3740/Projects/P5/P5.2/AndroidGUIClient/AndroidGUIClient.iml" />
+      <module fileurl="file://$USER_HOME$/Documents/University/2017_Fall-ECE3740/Projects/P5/P5.2/AndroidGUIClient/app/app.iml" filepath="$USER_HOME$/Documents/University/2017_Fall-ECE3740/Projects/P5/P5.2/AndroidGUIClient/app/app.iml" />
+    </modules>
+  </component>
+</project>
