@@ -7,7 +7,7 @@ package clientconnection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.lang.ref.WeakReference;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -21,19 +21,20 @@ import java.util.logging.Logger;
  */
 public class ClientConnection implements Runnable {
 
-    InputStream input;
-    OutputStream output;
-    ServerSocket serverSocket = null;
-    Socket clientSocket = null;
-    clientmessagehandler.MessageHandler myClientCommandHandler;
-    server.Server myServer;
-    boolean stopThisThread = false;
+    private InputStream input;
+    private OutputStream output;
+    private ServerSocket serverSocket = null;
+    private Socket clientSocket = null;
+    private clientmessagehandler.MessageHandler myClientCommandHandler;
+    private server.Server myServer;
+    private boolean stopThisThread = false;
 
-    InetAddress proxyAddress = null;
-    int proxyPortNumber;
-    boolean isProxyConnection = false;
-    client.ProxyClient myProxyClient = null;
-    userinterface.UserInterface serverMessageInterceptor;
+    private InetAddress proxyAddress = null;
+    private int proxyPortNumber;
+    private boolean isProxyConnection = false;
+    private client.ProxyClient myProxyClient = null;
+    private userinterface.UserInterface serverMessageInterceptor;
+    private boolean clientDisconnected = false;
 
 
     /**
@@ -88,8 +89,8 @@ public class ClientConnection implements Runnable {
             System.exit(1);
         }
 
-        this.serverMessageInterceptor = new MessageInterceptor(this.output);
-        this.myProxyClient = new client.ProxyClient(proxyPortNumber, serverMessageInterceptor, proxyAddress);
+        this.serverMessageInterceptor = new MessageInterceptor(this);
+        this.myProxyClient = new client.ProxyClient(this.proxyPortNumber, serverMessageInterceptor, this.proxyAddress);
         this.myClientCommandHandler = new clientmessagehandler.ProxyClientMessageHandler(this.myServer, this.myProxyClient);
 
         this.isProxyConnection = true;
@@ -101,7 +102,7 @@ public class ClientConnection implements Runnable {
         byte msg;
         String theClientMessage;
 
-        while (stopThisThread == false) {
+        while (!getThreadStopped()) {
             try {
                 msg = (byte) input.read();
                 theClientMessage = byteToString(msg);
@@ -112,7 +113,7 @@ public class ClientConnection implements Runnable {
                         + ". Stopping thread and disconnecting client: "
                         + clientSocket.getRemoteSocketAddress());
                 disconnectClient();
-                stopThisThread = true;
+                setThreadStopped(true);
             }
         }
     }
@@ -139,8 +140,11 @@ public class ClientConnection implements Runnable {
             output.write(msg);
             output.flush();
         } catch (IOException e) {
-            myServer.sendMessageToUI("cannot send to socket; exiting program.");
-            System.exit(1);
+            if (getThreadStopped()) {
+                myServer.sendMessageToUI(e.toString());
+                myServer.sendMessageToUI("cannot send to socket; exiting program.");
+                System.exit(1);
+            }
         } finally {
         }
     }
@@ -163,7 +167,10 @@ public class ClientConnection implements Runnable {
 
     public void disconnectClient() {
         try {
-            stopThisThread = true;
+            if (true == isProxyConnection) {
+                disconnectProxyClient();
+            }
+            setThreadStopped(true);
             clientSocket.close();
             clientSocket = null;
             input = null;
@@ -178,6 +185,31 @@ public class ClientConnection implements Runnable {
     public Socket getClientSocket() {
         return clientSocket;
     }
+    
+    public synchronized void setThreadStopped(boolean stop) { stopThisThread = stop; }
+    public synchronized boolean getThreadStopped() { return this.stopThisThread; }
+
+
+    // *************************************************************************
+    // Proxy connection specific
+    // *************************************************************************
+
+    /**
+     * Connect the proxy client to the external server.
+     * @throws IOException If a connection cannot be made to the server.
+     */
+    public void connectProxyClient() throws IOException {
+        myProxyClient.connectToServer();
+    }
+
+
+    /**
+     * Disconnect the client from the external server.
+     * @throws IOException If there is an exception disconnecting client.
+     */
+    public void disconnectProxyClient() throws IOException {
+        myProxyClient.disconnectFromServer();
+    }
 
 
     /**
@@ -189,7 +221,6 @@ public class ClientConnection implements Runnable {
         if (this.isProxyConnection) {
             this.proxyAddress = address;
             this.proxyPortNumber = portNumber;
-            this.serverMessageInterceptor = new MessageInterceptor(this.output);
         } else {
             myServer.sendMessageToUI("Trying to set proxy info for a normal connection.");
         }
@@ -199,18 +230,28 @@ public class ClientConnection implements Runnable {
     public boolean getProxy() {
         return this.isProxyConnection;
     }
+    
+    
+    public void proxyUnavailable() {
+        sendStringMessageToClient("Could not connect to server through proxy.");
+        clientDisconnect();
+    }
 
 
     private class MessageInterceptor implements userinterface.UserInterface {
-        PrintWriter output;
+        private final WeakReference<clientconnection.ClientConnection> connection;
 
-        public MessageInterceptor(OutputStream output) {
-            this.output = new PrintWriter(output, true);
+        public MessageInterceptor(clientconnection.ClientConnection connection) {
+            this.connection = new WeakReference<>(connection);
         }
 
         @Override
         public void update(String message) {
-            output.print(message);
+            clientconnection.ClientConnection connect = connection.get();
+            if (connect != null) {
+                connect.sendStringMessageToClient(message);
+                connect.sendMessageToClient((byte)0xFF);
+            }
         }
     }
 }

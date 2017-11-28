@@ -7,8 +7,6 @@ import java.util.logging.Logger;
 
 public class Server implements Runnable {
 
-    private InputStream input;
-    private OutputStream output;
     private ServerSocket serverSocket = null;
     private Socket clientSocket = null;
     private clientmessagehandler.ClientMessageHandler myClientCommandHandler;
@@ -140,6 +138,15 @@ public class Server implements Runnable {
         if (true == isProxyServer) {
             // Connect the client to an external server
             myCC = new clientconnection.ClientConnection(clientSocket, this, proxyAddress, proxyPortNumber);
+
+            try {
+                myCC.connectProxyClient();
+            } catch (IOException e) {
+                myUI.update("Error: Client could not connect to external server.");
+                myCC.proxyUnavailable();
+                return;
+            }
+
         } else {
             // Otherwise, connect client to this server
             myCC = new clientconnection.ClientConnection(clientSocket, myClientCommandHandler, this);

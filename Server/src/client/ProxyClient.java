@@ -13,7 +13,7 @@ import java.util.concurrent.TimeoutException;
  * @author Daniel Lovegrove
  */
 public class ProxyClient implements Runnable {
-    private static final int TIMEOUT_MILLIS = 2000;
+    private static final int TIMEOUT_MILLIS = 1000;
 
     private int portNumber;
     private Socket clientSocket = null;
@@ -46,7 +46,11 @@ public class ProxyClient implements Runnable {
             clientSocket.connect(new InetSocketAddress(ipAddress, portNumber), TIMEOUT_MILLIS);
 
             // Create a new command handler
-            this.commandHandler = new ServerMessageHandler(clientSocket);
+            try {
+                this.commandHandler = new ServerMessageHandler(clientSocket);
+            } catch (IOException e) {
+                System.out.println(e.toString());
+            }
 
             // Mark Client as "connected"
             setConnected(true);
@@ -66,23 +70,23 @@ public class ProxyClient implements Runnable {
             waitForDisconnectAck();
         } catch (TimeoutException e) {
             UI.update("Server connection timed out. Closing connection immediately.");
-        } finally {
-            // Close the socket
-            if (null != this.clientSocket) {
-                clientSocket.close();
-                clientSocket = null;
-            }
-
-            // Close the command handler
-            if (null != this.commandHandler) {
-                this.commandHandler.close();
-                this.commandHandler = null;
-            }
-
-            // Mark client as "Not connected."
-            setConnected(false);
-            clientDisconnected();
         }
+        
+        // Close the socket
+        if (null != this.clientSocket) {
+            clientSocket.close();
+            clientSocket = null;
+        }
+
+        // Close the command handler
+        if (null != this.commandHandler) {
+            this.commandHandler.close();
+            this.commandHandler = null;
+        }
+
+        // Mark client as "Not connected."
+        setConnected(false);
+        clientDisconnected();
     }
 
 

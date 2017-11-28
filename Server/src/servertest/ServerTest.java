@@ -1,15 +1,26 @@
 package servertest;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 /**
  *
- * @author ferens
+ * @author ferens, loveboat
  */
 public class ServerTest {
 
     public static void main(String[] args) {
 
         standardiouserinterface.StandardIO myUI = new standardiouserinterface.StandardIO();
-        server.Server myServer = new server.Server(8765, 1, myUI);
+        InetAddress proxyClientAddress = null;
+
+        try {
+            proxyClientAddress = InetAddress.getByName("192.168.1.214");
+        } catch (UnknownHostException e) {
+            myUI.update("Could not create IP address.");
+        }
+
+        server.Server myServer = new server.Server(8765, 1, myUI, proxyClientAddress, 7777);
         usercommandhandler.UserCommandHandler myUserCommandHandler = new usercommandhandler.UserCommandHandler(myUI, myServer);
         myUI.setCommand(myUserCommandHandler);
         Thread myUIthread = new Thread(myUI);
