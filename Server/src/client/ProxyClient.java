@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketTimeoutException;
 import servermessagehandler.ServerMessageHandler;
 import java.util.concurrent.TimeoutException;
 
@@ -13,7 +12,7 @@ import java.util.concurrent.TimeoutException;
  *
  * @author Daniel Lovegrove
  */
-public class Client implements Runnable {
+public class ProxyClient implements Runnable {
     private static final int TIMEOUT_MILLIS = 2000;
 
     private int portNumber;
@@ -30,7 +29,7 @@ public class Client implements Runnable {
      * @param ui The user interface
      * @param ipAddress The IP address for the Client to connect to
      */
-    public Client(int portNumber, userinterface.UserInterface ui, InetAddress ipAddress) {
+    public ProxyClient(int portNumber, userinterface.UserInterface ui, InetAddress ipAddress) {
         this.portNumber = portNumber;
         this.UI = ui;
         this.ipAddress = ipAddress;
