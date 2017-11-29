@@ -42,14 +42,14 @@ public class ProxyClient implements Runnable {
             // Create a socket
             clientSocket = new Socket();
 
-            // Try to connect to the server
+            // Try to connect to the external server
             clientSocket.connect(new InetSocketAddress(ipAddress, portNumber), TIMEOUT_MILLIS);
 
             // Create a new command handler
             try {
                 this.commandHandler = new ServerMessageHandler(clientSocket);
             } catch (IOException e) {
-                System.out.println(e.toString());
+                UI.update(e.toString());
             }
 
             // Mark Client as "connected"
@@ -68,9 +68,7 @@ public class ProxyClient implements Runnable {
         // Wait for the disconnection acnowledgement.
         try {
             waitForDisconnectAck();
-        } catch (TimeoutException e) {
-            UI.update("Server connection timed out. Closing connection immediately.");
-        }
+        } catch (TimeoutException e) { }
         
         // Close the socket
         if (null != this.clientSocket) {
@@ -86,7 +84,6 @@ public class ProxyClient implements Runnable {
 
         // Mark client as "Not connected."
         setConnected(false);
-        clientDisconnected();
     }
 
 
@@ -138,14 +135,6 @@ public class ProxyClient implements Runnable {
 
 
     /**
-     * Notify the user that they have disconnected.
-     */
-    public void clientDisconnected() {
-        UI.update("Client disconnected from server on port " + this.portNumber);
-    }
-
-
-    /**
      * Wait for the server to stop sending data. Sets disconnectWaiting to true,
      * and waits until the Thread reading from the server puts it to false. If
      * it takes too long, a TimeoutException is thrown. Since we are blocking
@@ -171,9 +160,6 @@ public class ProxyClient implements Runnable {
      * @param e The exception thrown from trying to communicate with the server
      */
     public void serverNotResponding(IOException e) {
-        UI.update("Could not read from server: " + e.toString());
-        UI.update("Disconnecting...");
-
         try {
             this.disconnectFromServer();
         } catch (IOException ex) {

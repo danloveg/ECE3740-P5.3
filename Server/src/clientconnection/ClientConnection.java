@@ -7,6 +7,7 @@ package clientconnection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
@@ -195,11 +196,16 @@ public class ClientConnection implements Runnable {
     // *************************************************************************
 
     /**
-     * Connect the proxy client to the external server.
-     * @throws IOException If a connection cannot be made to the server.
+     * Connect the proxy client to the external server and start its Thread.
      */
-    public void connectProxyClient() throws IOException {
-        myProxyClient.connectToServer();
+    public void connectProxyClient() {
+        try {
+            myProxyClient.connectToServer();
+            Thread t = new Thread(myProxyClient);
+            t.start();
+        } catch (IOException e) {
+            serverMessageInterceptor.update("Could not connect to MX7CK.\nNo functionality available.");
+        }
     }
 
 
@@ -230,11 +236,10 @@ public class ClientConnection implements Runnable {
     public boolean getProxy() {
         return this.isProxyConnection;
     }
-    
-    
+
+
     public void proxyUnavailable() {
-        sendStringMessageToClient("Could not connect to server through proxy.");
-        clientDisconnect();
+        disconnectClient();
     }
 
 

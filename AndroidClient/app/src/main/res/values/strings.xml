@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AndroidGuiClient</string>
+    <string name="app_name">AndroidClient</string>
     <string name="ip_address_entry">Ip Address</string>
     <string name="ip_address_update">Update IP</string>
     <string name="port_number_entry">Port Number</string>

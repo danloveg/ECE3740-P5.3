@@ -9,8 +9,8 @@ public class Server implements Runnable {
 
     private ServerSocket serverSocket = null;
     private Socket clientSocket = null;
-    private clientmessagehandler.ClientMessageHandler myClientCommandHandler;
-    private userinterface.UserInterface myUI;
+    private final clientmessagehandler.ClientMessageHandler myClientCommandHandler;
+    public userinterface.UserInterface myUI;
     private int portNumber = 8765, backlog = 500;
     private boolean doListen = false;
 
@@ -130,7 +130,7 @@ public class Server implements Runnable {
 
 
     /**
-     * Create a normal connection to this server.
+     * Create a normal or proxy connection to this server.
      */
     public void connectClient() {
         clientconnection.ClientConnection myCC;
@@ -138,14 +138,7 @@ public class Server implements Runnable {
         if (true == isProxyServer) {
             // Connect the client to an external server
             myCC = new clientconnection.ClientConnection(clientSocket, this, proxyAddress, proxyPortNumber);
-
-            try {
-                myCC.connectProxyClient();
-            } catch (IOException e) {
-                myUI.update("Error: Client could not connect to external server.");
-                myCC.proxyUnavailable();
-                return;
-            }
+            myCC.connectProxyClient();
 
         } else {
             // Otherwise, connect client to this server

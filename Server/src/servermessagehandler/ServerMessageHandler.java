@@ -29,8 +29,8 @@ public class ServerMessageHandler {
 
 
     /**
-     * Blocking method that reads an n-character String from the server.
-     * @return The byte from the server.
+     * Blocking method that reads a String from the server.
+     * @return The String from the server
      * @throws IOException
      */
     public String readStringFromServer() throws IOException {
