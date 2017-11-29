@@ -82,7 +82,9 @@ public class ProxyClient implements Runnable {
      * @throws IOException
      */
     public void sendMessageToServer(String message) throws IOException {
-        commandHandler.sendStringToServer(message);
+        if (getConnected()) {
+            commandHandler.sendStringToServer(message);
+        }
     }
 
 
