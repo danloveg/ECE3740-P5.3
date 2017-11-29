@@ -18,7 +18,7 @@ public class ProxyClient implements Runnable {
     private int portNumber;
     private Socket clientSocket = null;
     private InetAddress ipAddress = null;
-    private final userinterface.UserInterface UI;
+    protected final userinterface.UserInterface UI;
     private servermessagehandler.ServerMessageHandler commandHandler;
     private boolean connected = false;
     private boolean disconnectWaiting = false;
@@ -68,18 +68,7 @@ public class ProxyClient implements Runnable {
         // Wait for the disconnection acnowledgement.
         try {
             waitForDisconnectAck();
-        } catch (TimeoutException e) { }
-        
-        // Close the socket
-        if (null != this.clientSocket) {
-            clientSocket.close();
-            clientSocket = null;
-        }
-
-        // Close the command handler
-        if (null != this.commandHandler) {
-            this.commandHandler.close();
-            this.commandHandler = null;
+        } catch (TimeoutException e) {
         }
 
         // Mark client as "Not connected."

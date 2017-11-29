@@ -56,24 +56,33 @@ public class ProxyClientMessageHandler implements MessageHandler {
      * @throws IOException If the client cannot send a message to the server
      */
     public void handleCompleteClientMessage(clientconnection.ClientConnection connection, String message) throws IOException {
-        // Send the string to the connected server
-        myClient.sendMessageToServer(message);
-
-        // Disconnect the user from this server if they want to disconnect
         switch (theCommand) {
             case "d":
+            case "q":
+                // We need to intercept disconnect commands to disconnect client gracefully
                 myServer.sendMessageToUI("Disconnect command intercepted from client " + connection.getClientSocket().getRemoteSocketAddress());
+
+                // Disconnect from external server
+                try {
+                    if (myClient.getConnected()) {
+                        // Send disconnect message to server
+                        myClient.sendMessageToServer(theCommand);
+                        // Then disconnect the Client
+                        myClient.disconnectFromServer();
+                    }
+                } catch (IOException ex) {
+                    myServer.sendMessageToUI("Problem occurred disconnecting proxy client:\n\t" + ex.toString());
+                }
+
+                // Disconnect from proxy server
                 connection.sendStringMessageToClient("Disconnect Ack: " + connection.getClientSocket().getRemoteSocketAddress());
                 connection.sendMessageToClient((byte) 0xFF);
                 connection.clientDisconnect();
                 myServer.sendMessageToUI("\tDisconnect successful. ");
                 break;
-            case "q":
-                myServer.sendMessageToUI("Quit command intercepted from client " + connection.getClientSocket().getRemoteSocketAddress());
-                connection.sendStringMessageToClient("Quit Ack: " + connection.getClientSocket().getRemoteSocketAddress());
-                connection.sendMessageToClient((byte) 0xFF);
-                connection.clientQuit();
-                myServer.sendMessageToUI("\tQuit successful. ");
+            default:
+                // Every other command can be redirected straight to the external server
+                myClient.sendMessageToServer(theCommand);
                 break;
         }
     }

@@ -174,7 +174,9 @@ public class ClientConnection implements Runnable {
             setThreadStopped(true);
             clientSocket.close();
             clientSocket = null;
+            input.close();
             input = null;
+            output.close();
             output = null;
         } catch (IOException e) {
             myServer.sendMessageToUI("cannot close client socket; exiting program.");
