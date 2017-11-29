@@ -137,7 +137,7 @@ public class Client implements Runnable {
      * Notify the user that they have disconnected.
      */
     public void clientDisconnected() {
-        // UI.update("Client disconnected from server on port " + this.portNumber);
+        UI.update("Client disconnected from server on port " + this.portNumber);
     }
 
 
