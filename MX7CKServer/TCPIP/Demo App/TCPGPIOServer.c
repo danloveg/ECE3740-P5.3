@@ -107,7 +107,6 @@ void TCPGPIOServer(void) {
             // Get the number of bytes in the 'GET' queue
             numBytes = TCPIsGetReady(mySocket);
 
-            // Otherwise, get the user's command
             if (numBytes > 0) {
                 // Read from the socket
                 BOOL commandComplete = tcpReadCommandWithProtocol(
@@ -191,7 +190,8 @@ parsedCommand findCommand(BYTE* unparsedCommand) {
     else if (strcmp(usersCommand, "gpb2") == 0) { cmd = BTN2; }
     else if (strcmp(usersCommand, "gpb3") == 0) { cmd = BTN3; }
     else if (strcmp(usersCommand, "temp") == 0) { cmd = TEMP; }
-    else { cmd = INVALID; }
+    else if (usersCommand != NULL && strlen(usersCommand) > 0) { cmd = INVALID; }
+    else { cmd = NULL_COMMAND; }
     
     return cmd;
 }
@@ -273,8 +273,10 @@ BOOL executeCommand(TCP_SOCKET socket, parsedCommand cmd) {
                     tcpSendMessageWithProtocol(socket, tempReading);
                 }
                 break;
+            case INVALID:
+                tcpSendMessageWithProtocol(socket, "Invalid command.");
             default:
-                tcpSendMessageWithProtocol(socket, "Invalid Command");
+                // Do nothing for the NULL command
                 break;
         }
 

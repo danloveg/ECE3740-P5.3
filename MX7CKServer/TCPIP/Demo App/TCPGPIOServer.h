@@ -26,6 +26,7 @@ typedef enum _myState {
 
 typedef enum _parsedCommand {
     INVALID = 0,
+    NULL_COMMAND,
     LED1,
     LED2,
     LED3,
