@@ -1,78 +1,93 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package usercommandhandler;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  *
- * @author ferens
+ * @author ferens, loveboat
  */
 public class UserCommandHandler {
-    userinterface.UserInterface myUI;
-    server.Server myServer;
+    private userinterface.UserInterface myUI;
+    private server.Server myServer;
+    private ExecutorService threadPool;
 
+
+    /**
+     * Create a new instance of a server user command handler.
+     * @param myUI The user interface connected to the server
+     * @param myServer The server instance itself
+     */
     public UserCommandHandler(userinterface.UserInterface myUI, server.Server myServer) {
         this.myUI = myUI;
         this.myServer = myServer;
+        threadPool = Executors.newFixedThreadPool(4);
     }
 
+
+    /**
+     * Handle the server user's command. All commands are processed in a thread
+     * in this object's thread pool to reduce lag in the server user's UI.
+     * @param theCommand The command that the server user issued
+     */
     public void handleUserCommand(String theCommand) {
-        String[] commandTokens = theCommand.split("\\s+");
-        switch (commandTokens[0]) {
-            case "1": //QUIT
-                if (commandTokens.length == 1) {
-                    myServer.stopServer();
-                    myUI.update("Quiting program by User command.");
-                    System.exit(-1);
-                } else {
-                    myUI.update("Quit does not accept any parameters.");
-                }
-                break;
-            case "2": //LISTEN
-                if (commandTokens.length == 1) {
-                    myServer.listen();
-                    myUI.update("Server is now listening, ...");
-                } else {
-                    myUI.update("Listen does not accept any parameters.");
-                }
-                break;
-            case "3": //SET PORT
-                if (commandTokens.length == 2) {
-                    setServerPort(commandTokens[1]);
-                } else {
-                    myUI.update("Set port accepts 1 and only 1 parameter.");
-                }
-                break;
-            case "4": //GET PORT
-                if (commandTokens.length == 1) {
-                    myUI.update("The port number is: " +String.valueOf(myServer.getPort()));
-                break;
-                } else {
-                    myUI.update("Get port does not accept any parameters.");
-                }
-            case "5": //Stop Listening
-                if (commandTokens.length == 1) {
-                    myServer.stopListening();
-                    myUI.update("Server is not listening, ...");
-                } else {
-                    myUI.update("Stop listening does not accept any parameters.");
-                }
-                break;
-            case "6": //START SERVER SOCKET
-                if (commandTokens.length == 1) {
-                    myServer.startServer();
-                    myUI.update("Server Socket has been created.");
-                } else {
-                    myUI.update("Create socket does not accept any parameters.");
-                }
-                break;
-            case "":
-                break;
-            default:
-                myUI.update("Command \"" + theCommand + "\" not recognized.");
-                break;
-        }
+        threadPool.submit(() -> {
+            String[] commandTokens = theCommand.split("\\s+");
+            switch (commandTokens[0]) {
+                case "1": //QUIT
+                    if (commandTokens.length == 1) {
+                        myServer.stopServer();
+                        myUI.update("Quiting program by User command.");
+                        System.exit(-1);
+                    } else {
+                        myUI.update("Quit does not accept any parameters.");
+                    }
+                    break;
+                case "2": //LISTEN
+                    if (commandTokens.length == 1) {
+                        myServer.listen();
+                        myUI.update("Server is now listening, ...");
+                    } else {
+                        myUI.update("Listen does not accept any parameters.");
+                    }
+                    break;
+                case "3": //SET PORT
+                    if (commandTokens.length == 2) {
+                        setServerPort(commandTokens[1]);
+                    } else {
+                        myUI.update("Set port accepts 1 and only 1 parameter.");
+                    }
+                    break;
+                case "4": //GET PORT
+                    if (commandTokens.length == 1) {
+                        myUI.update("The port number is: " +String.valueOf(myServer.getPort()));
+                    break;
+                    } else {
+                        myUI.update("Get port does not accept any parameters.");
+                    }
+                case "5": //Stop Listening
+                    if (commandTokens.length == 1) {
+                        myServer.stopListening();
+                        myUI.update("Server is not listening, ...");
+                    } else {
+                        myUI.update("Stop listening does not accept any parameters.");
+                    }
+                    break;
+                case "6": //START SERVER SOCKET
+                    if (commandTokens.length == 1) {
+                        myServer.startServer();
+                        myUI.update("Server Socket has been created.");
+                    } else {
+                        myUI.update("Create socket does not accept any parameters.");
+                    }
+                    break;
+                case "":
+                    break;
+                default:
+                    myUI.update("Command \"" + theCommand + "\" not recognized.");
+                    break;
+            }
+        });
     }
     
     
