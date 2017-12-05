@@ -7,8 +7,9 @@ import java.io.IOException;
  * @author loveboat
  */
 public class ProxyClientMessageHandler implements MessageHandler {
-    server.Server myServer;
-    client.ProxyClient myClient;
+    private static final char TERMINATOR = 0xFFFD;
+    private final server.Server myServer;
+    private final client.ProxyClient myClient;
     String theCommand = "";
 
 
@@ -27,7 +28,7 @@ public class ProxyClientMessageHandler implements MessageHandler {
      */
     @Override
     public void handleClientMessage(clientconnection.ClientConnection connection, String message) throws IOException {
-        if (message.charAt(0)!=0xFFFD) { //0xFFFD = UTF-8 encoding of 0xFF
+        if (message.charAt(0) != TERMINATOR) { //0xFFFD = UTF-8 encoding of 0xFF
             theCommand += message;
         } else {
             handleCompleteClientMessage(connection, theCommand);
