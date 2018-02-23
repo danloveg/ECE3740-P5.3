@@ -14,4 +14,5 @@ The TCP/IP server for the MX7CK is the endpoint the client connects to. It recei
 ## Running the Code
 
 To run everything together, first open **Android Studio** and upload the client code in the **AndroidClient folder** to an Android device. The app uploaded is the client. Then, you will want to connect the MX7CK board to a computer via USB and Ethernet. Open **MPLABX** to upload the TCP/IP Server code in the **MX7CKServer folder** to the board. Finally, in class we used **Netbeans** to run the Proxy Server code in the **Server folder**.
+
 You will want to update the port and IP address in the Android app to the port of the Proxy server and the local IP of the machine running the proxy server.
