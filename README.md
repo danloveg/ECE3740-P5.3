@@ -13,7 +13,15 @@ The Java proxy server can be run on any machine that can be connected to the MX7
 The TCP/IP server for the MX7CK is the endpoint the client connects to. It receives data from the proxy server and sends responses to the proxy server.
 
 ## Running the Code
+There are three IDEs used here: Android Studio, MPLABX, and Netbeans.
 
-To run everything together, first open **Android Studio** and upload the client code in the **AndroidClient folder** to an Android device. The app uploaded is the client. Then, you will want to connect the MX7CK board to a computer via USB and Ethernet. Open **MPLABX** to upload the TCP/IP Server code in the **MX7CKServer folder** to the board. Finally, in class we used **Netbeans** to run the Proxy Server code in the **Server folder**.
+### Android Client
+First open **Android Studio** and upload the client code in the **AndroidClient folder** to an Android device. The app uploaded is the client. There are various buttons you can use to interact with a server.
 
-You will want to update the port and IP address in the Android app to the port of the Proxy server and the local IP of the machine running the proxy server.
+### MX7CK C Server 
+Once the Android app is verified to be working, you will want to connect the MX7CK board to a computer via USB and Ethernet. Open **MPLABX** to upload the TCP/IP Server code in the **MX7CKServer folder** to the board.
+
+### Java Proxy Server
+Once the MX7CK server is up and running (the LED on the board should be blinking), uses **Netbeans** to run the Proxy Server code in the **Server folder**.
+
+To test everythin together you will want to update the port and IP address in the Android app to the port of the Proxy server and the local IP of the machine running the proxy server, respectively.
